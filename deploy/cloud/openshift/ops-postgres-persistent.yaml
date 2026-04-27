@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ops-postgres-data
+  namespace: opsportal
+  labels:
+    app: ops-postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ops-postgres
+  namespace: opsportal
+  labels:
+    app: ops-postgres
+    app.kubernetes.io/component: ops-postgres
+    app.kubernetes.io/name: ops-postgres
+    app.kubernetes.io/part-of: ops-portal-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ops-postgres
+  template:
+    metadata:
+      labels:
+        app: ops-postgres
+        app.kubernetes.io/component: ops-postgres
+        app.kubernetes.io/name: ops-postgres
+        deployment: ops-postgres
+    spec:
+      containers:
+        - name: ops-postgres
+          image: containers.example.com/ops-team/ops-portal:postgres-16-alpine
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_DB
+              value: ops_ops_portal
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: opsPortalCloud2026!
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+              ephemeral-storage: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+              ephemeral-storage: 1Gi
+          volumeMounts:
+            - name: ops-postgres-data
+              mountPath: /var/lib/postgresql/data
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      volumes:
+        - name: ops-postgres-data
+          persistentVolumeClaim:
+            claimName: ops-postgres-data
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ops-postgres
+  namespace: opsportal
+  labels:
+    app: ops-postgres
+spec:
+  selector:
+    app: ops-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

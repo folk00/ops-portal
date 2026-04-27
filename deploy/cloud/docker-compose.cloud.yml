@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE:-postgres:16-alpine}
+    container_name: ops-ops-portal-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ops_ops_portal}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./bootstrap/001-ops_ops_portal.sql:/docker-entrypoint-initdb.d/001-ops_ops_portal.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ops_ops_portal}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    image: ${REGISTRY_IMAGE}:${API_IMAGE_TAG}
+    container_name: ops-ops-portal-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ops_ops_portal}
+      CORS_ORIGINS: '["${WEB_ORIGIN}"]'
+      ALLOW_DEMO_FALLBACK: "false"
+      WORKBOOK_PATH: ${WORKBOOK_PATH:-/app/input/workbook.xlsx}
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-https://ai-gateway.example.com}
+      AI_DEFAULT_MODEL: ${AI_DEFAULT_MODEL:-gpt-4.1-mini}
+      AI_GATEWAY_TOKEN: ${AI_GATEWAY_TOKEN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8010}:8010"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+
+  web:
+    image: ${REGISTRY_IMAGE}:${WEB_IMAGE_TAG}
+    container_name: ops-ops-portal-web
+    restart: unless-stopped
+    environment:
+      API_PROXY_BASE_URL: http://api:8010
+      NEXT_PUBLIC_API_BASE_URL: ""
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  postgres_data:

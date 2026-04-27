@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 196 66% 95%;
+    --foreground: 222 32% 16%;
+    --card: 197 72% 98%;
+    --card-foreground: 222 32% 16%;
+    --border: 196 42% 81%;
+    --input: 196 35% 79%;
+    --ring: 195 90% 43%;
+    --primary: 187 80% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 195 73% 93%;
+    --secondary-foreground: 222 32% 18%;
+    --muted: 196 61% 94%;
+    --muted-foreground: 215 16% 44%;
+    --accent: 199 86% 49%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 53%;
+    --destructive-foreground: 0 0% 100%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(248,252,255,0.96) 0%, rgba(231,242,249,0.98) 48%, rgba(222,238,246,0.99) 100%),
+    radial-gradient(circle at 7% 4%, rgba(20,160,191,0.20), transparent 24%),
+    radial-gradient(circle at 90% 8%, rgba(45,122,214,0.14), transparent 22%),
+    radial-gradient(circle at 50% 38%, rgba(15,118,136,0.10), transparent 28%),
+    linear-gradient(rgba(116,157,171,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(116,157,171,0.08) 1px, transparent 1px);
+  background-size: auto, auto, auto, auto, 44px 44px, 44px 44px;
+  background-position: 0 0, 0 0, 0 0, 0 0, -1px -1px, -1px -1px;
+}
+
+.ag-theme-quartz {
+  --ag-background-color: #fbfeff;
+  --ag-foreground-color: #0f172a;
+  --ag-header-background-color: #f1f9fc;
+  --ag-header-foreground-color: #334155;
+  --ag-row-hover-color: rgba(59, 130, 246, 0.04);
+  --ag-selected-row-background-color: rgba(59, 130, 246, 0.08);
+  --ag-border-color: #d5e6ef;
+  --ag-font-size: 12px;
+  --ag-cell-horizontal-padding: 10px;
+  --ag-grid-size: 6px;
+}

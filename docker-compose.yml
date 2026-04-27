@@ -1,0 +1,91 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ops-ops-portal-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ops_ops_portal_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ops-ops-portal-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ops_ops_portal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ops_ops_portal_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ops_ops_portal"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: ops-ops-portal-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/ops_ops_portal
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000"]'
+      WORKBOOK_PATH: /app/input/workbook.xlsx
+      AI_GATEWAY_BASE_URL: ${AI_GATEWAY_BASE_URL:-https://ai-gateway.example.com}
+      AI_GATEWAY_TOKEN: ${AI_GATEWAY_TOKEN:-}
+      AI_DEFAULT_MODEL: ${AI_DEFAULT_MODEL:-gpt-4.1-mini}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8010:8010"
+    volumes:
+      - type: bind
+        source: ${WORKBOOK_SOURCE_PATH:-../../workbook.xlsx}
+        target: /app/input/workbook.xlsx
+        read_only: true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health').read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        API_PROXY_BASE_URL: http://api:8010
+        NEXT_PUBLIC_API_BASE_URL: ""
+    container_name: ops-ops-portal-web
+    restart: unless-stopped
+    environment:
+      API_PROXY_BASE_URL: http://api:8010
+      NEXT_PUBLIC_API_BASE_URL: ""
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+volumes:
+  ops_ops_portal_postgres:
+  ops_ops_portal_redis:

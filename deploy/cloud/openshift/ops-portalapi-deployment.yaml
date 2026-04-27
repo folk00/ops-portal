@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ops-portalapi
+  namespace: opsportal
+  labels:
+    app: ops-portalapi
+    app.kubernetes.io/component: api
+    app.kubernetes.io/name: ops-portalapi
+    app.kubernetes.io/part-of: ops-portal-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ops-portalapi
+  template:
+    metadata:
+      labels:
+        app: ops-portalapi
+        app.kubernetes.io/component: api
+        app.kubernetes.io/name: ops-portalapi
+        deployment: ops-portalapi
+    spec:
+      containers:
+        - name: ops-portalapi
+          image: containers.example.com/ops-team/ops-portal:api-2026-03-27-r2
+          imagePullPolicy: Always
+          env:
+            - name: DATABASE_URL
+              value: postgresql+psycopg://postgres:opsPortalCloud2026!@ops-postgres:5432/ops_ops_portal
+            - name: ALLOW_DEMO_FALLBACK
+              value: "false"
+            - name: CORS_ORIGINS
+              value: '["http://localhost:3000","https://ops-portal-opsportal-ops-team.cloudapps.example.com"]'
+            - name: AI_GATEWAY_BASE_URL
+              value: https://ai-gateway.example.com
+            - name: AI_DEFAULT_MODEL
+              value: gpt-4.1-mini
+            - name: AI_GATEWAY_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ops-portal-ai_gw
+                  key: ai-gateway-token
+          ports:
+            - containerPort: 8010
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+              ephemeral-storage: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+              ephemeral-storage: 4Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ops-portalapi
+  namespace: opsportal
+  labels:
+    app: ops-portalapi
+spec:
+  selector:
+    app: ops-portalapi
+  ports:
+    - name: http
+      port: 8010
+      targetPort: 8010
+      protocol: TCP

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ops-postgres
+  namespace: opsportal
+  labels:
+    app: ops-postgres
+    app.kubernetes.io/component: ops-postgres
+    app.kubernetes.io/name: ops-postgres
+    app.kubernetes.io/part-of: ops-portal-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ops-postgres
+  template:
+    metadata:
+      labels:
+        app: ops-postgres
+        app.kubernetes.io/component: ops-postgres
+        app.kubernetes.io/name: ops-postgres
+    spec:
+      containers:
+        - name: ops-postgres
+          image: containers.example.com/ops-team/ops-portal:postgres-16-alpine
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_DB
+              value: ops_ops_portal
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: opsPortalCloud2026!
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - name: ops-postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: ops-postgres-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ops-postgres
+  namespace: opsportal
+  labels:
+    app: ops-postgres
+spec:
+  selector:
+    app: ops-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

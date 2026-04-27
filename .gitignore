@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+.env.*.local
+*.cloud
+.ai_gateway_token
+
+# Customer data / inputs
+*.xlsx
+*.csv
+sample-data/*.xlsx
+sample-data/*.csv
+inputs/
+outputs/
+ssh_logs/
+bootstrap_automation/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# DB
+*.sqlite3
+*.db
+*.sql.gz
+*.dump
+pgdata/
+
+# Licenses (AG Grid Enterprise)
+ag-grid-enterprise.lic
+
+# Docker
+*.tar

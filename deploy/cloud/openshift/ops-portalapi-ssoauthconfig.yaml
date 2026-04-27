@@ -1,0 +1,24 @@
+apiVersion: cae.example.com/v1
+kind: SSOAuthConfig
+metadata:
+  name: ops-portalapi-opsportal-ops-team.cloudapps.example.com
+  namespace: opsportal
+spec:
+  provider:
+    idp: okta
+    sso: platform
+    cors: platform
+  contexts:
+    - context: /
+      contextMatch: prefix
+      policyType: web
+  policy:
+    web:
+      allow:
+        - paths:
+            - path: /
+              pathMatch: prefix
+          when:
+            - kind: userId
+              values:
+                - "*"

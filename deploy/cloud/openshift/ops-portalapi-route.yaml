@@ -1,0 +1,20 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: ops-portalapi
+  namespace: opsportal
+  labels:
+    app: ops-portalapi
+  annotations:
+    haproxy.router.openshift.io/timeout: 10m
+spec:
+  host: ops-portalapi-opsportal-ops-team.cloudapps.example.com
+  to:
+    kind: Service
+    name: ops-portalapi
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
