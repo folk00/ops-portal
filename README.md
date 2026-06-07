@@ -1,6 +1,6 @@
 # Ops Portal
 
-A reference operations portal for migration / project delivery teams: tracker execution, site ownership, peer review, workbook imports, capacity planning, and calendar context — built as a reference cloud-native stack.
+A reference operations portal for migration / project delivery teams: tracker execution, site ownership, peer review, workbook imports, capacity planning, and calendar context — built as a cloud-native reference stack.
 
 ## Stack
 

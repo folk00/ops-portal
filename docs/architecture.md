@@ -21,7 +21,7 @@ Ops Portal is a standalone operational system for migration tracking and team co
 
 ## UX Inspiration Sources
 
-Inspired by the existing internal reference stack:
+Informed by prior internal reference platforms:
 
 - clear application shell with strong top-level areas
 - compact card rhythm instead of oversized consumer spacing
