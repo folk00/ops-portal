@@ -45,7 +45,7 @@ jobs:
           python -c "from main import app; print('OK', len(app.routes), 'routes')"
 
   web:
-    name: Web (Next.js) - install + build + lint
+    name: Web (Next.js) - install + build
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -1,5 +1,7 @@
 # Ops Portal
 
+[![CI](https://github.com/folk00/ops-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/folk00/ops-portal/actions/workflows/ci.yml)
+
 A reference operations portal for migration / project delivery teams: tracker execution, site ownership, peer review, workbook imports, capacity planning, and calendar context — built as a cloud-native reference stack.
 
 ## Stack
